@@ -1,0 +1,2220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --background-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-bottom: none;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            background-color: #000;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            border-radius: var(--border-radius);
+        }
+
+        .controls-container {
+            padding: 20px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .form-control {
+            border-radius: var(--border-radius);
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .status-connected {
+            background-color: #28a745;
+        }
+
+        .status-disconnected {
+            background-color: #dc3545;
+        }
+
+        .status-connecting {
+            background-color: #ffc107;
+        }
+
+        .asr-container {
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            border: 1px solid #ced4da;
+        }
+
+        .asr-text {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .system-message {
+            background-color: #f1f8e9;
+            border-left: 4px solid #8bc34a;
+        }
+
+        .recording-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(220, 53, 69, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+            align-items: center;
+        }
+
+        .recording-indicator .blink {
+            width: 10px;
+            height: 10px;
+            background-color: #fff;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .mode-switch {
+            margin-bottom: 20px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: var(--card-bg);
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .settings-panel {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .voice-record-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+        }
+
+        .voice-record-btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .voice-record-btn:active {
+            background-color: #dc3545;
+            transform: scale(0.95);
+        }
+
+        .voice-record-btn i {
+            font-size: 24px;
+        }
+
+        .voice-record-label {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .video-size-control {
+            margin-top: 15px;
+        }
+
+        .recording-pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(220, 53, 69, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+
+        .option-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .check-btn {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+        }
+
+        .check-btn.checked {
+            background-color: #198754;
+            color: white;
+        }
+
+        .radar-btn {
+            background-color: #ffc107;
+            position: relative;
+        }
+
+        .radar-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: rgba(255, 193, 7, 0.5);
+            animation: radar 1.5s infinite;
+            opacity: 0;
+        }
+
+        @keyframes radar {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 新增HRA按钮样式 */
+        .hra-toggle-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--primary-color);
+        }
+
+        .hra-toggle-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .hra-toggle-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 新增：设置面板下方按钮容器样式 */
+        .settings-bottom-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px 5px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        /* 新增：选择框样式 */
+        .radar-form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .radar-form-container label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .radar-form-container select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ced4da;
+            margin-bottom: 10px;
+        }
+
+        .radar-form-container button {
+            margin: 0 auto;
+        }
+
+        /* 新增：统一的按钮和表单容器 */
+
+        .control-buttons-container {
+            /*display: flex;*/
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        /* 响应式布局调整 */
+        @media (max-width: 768px) {
+            .settings-bottom-buttons {
+                gap: 20px;
+            }
+
+            .control-buttons-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .radar-form-container {
+                width: 100%;
+            }
+        }
+
+        /* 响应式布局调整 */
+        @media (min-width: 768px) {
+            .control-unit {
+                width: 30%; /* 中等屏幕以上每个单元占30%宽度 */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .settings-bottom-buttons {
+                gap: 20px;
+            }
+
+            .control-buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .control-unit {
+                max-width: 100%;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="dashboard-container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-4"></h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 视频区域 -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="status-indicator status-disconnected" id="connection-status"></span>
+                        <span id="status-text">未连接</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="video-container">
+                        <video id="video" autoplay playsinline></video>
+                        <div class="recording-indicator" id="recording-indicator">
+                            <div class="blink"></div>
+                            <span>录制中</span>
+                        </div>
+                    </div>
+
+                    <div class="controls-container">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <button class="btn btn-primary w-100" id="start">
+                                    <i class="bi bi-play-fill"></i> 开始连接
+                                </button>
+                                <button class="btn btn-danger w-100" id="stop" style="display: none;">
+                                    <i class="bi bi-stop-fill"></i> 停止连接
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="video-size-control">
+                                    <label for="video-size-slider" class="form-label">视频大小调节: <span
+                                            id="video-size-value">100%</span></label>
+                                    <input type="range" class="form-range" id="video-size-slider" min="50" max="150"
+                                           value="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-panel mt-3" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="use-stun">
+                                        <label class="form-check-label" for="use-stun">使用STUN服务器</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 新增：设置面板下方按钮容器 -->
+                        <div class="settings-bottom-buttons">
+                            <!-- 新增：统一的按钮和表单容器 -->
+                            <div class="control-buttons-container">
+                                <!-- 新增HRA解析按钮 -->
+                                <div class="control-unit">
+                                    <div class="hra-toggle-btn" id="hra-toggle-btn">
+                                        <span class="font-bold">HRA</span>
+
+                                    </div>
+                                    <input type="text" class="form-control mt-3" id="hra-textbox"
+                                           placeholder="HRA输入内容">
+
+                                </div>
+                                <!-- 雷达按钮和选择框 -->
+                                <div class="control-unit">
+                                    <form id="radar-form">
+                                        <button class="option-btn radar-btn" type="submit">
+                                            <i class="bi bi-radar"></i>雷达
+                                        </button>
+                                    </form>
+                                    <input type="text" class="form-control mt-3" id="radar-textbox"
+                                           placeholder="雷达输入内容">
+                                </div>
+                                <!-- 用户选择单元 -->
+                                <div class="control-unit">
+                                    <label for="ids" class="mb-2 d-block">选择用户：</label>
+                                    <select id="ids" name="ids" multiple class="form-control mb-3" style="height: 60px">
+                                        <option value="1">用户1</option>
+                                        <option value="2">用户2</option>
+                                        <option value="3">用户3</option>
+                                        <option value="4">用户4</option>
+                                        <option value="5">用户5</option>
+                                        <option value="6">用户6</option>
+                                    </select>
+                                    <button class="btn btn-primary w-100" id="user-select-btn">
+                                        <i class="bi bi-check"></i> 增加HRA报告
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧交互 -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+
+                    <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat"
+                            type="button" role="tab" aria-controls="chat" aria-selected="true">对话模式
+                    </button>
+
+
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="interaction-tabs-content">
+                        <!-- 对话模式 -->
+                        <div class="tab-pane fade show active" id="chat" role="tabpanel"
+                             aria-labelledby="chat-tab">
+                            <div class="asr-container mb-3" id="chat-messages">
+                                <div class="asr-text system-message">
+                                    惠惠: 欢迎使用惠斯安普医疗助手大模型，请点击左侧"开始连接"按钮开始对话。
+                                </div>
+                            </div>
+
+                            <form id="chat-form" type="hidden">
+                                <div class="input-group mb-3 hidden" >
+
+                                        <textarea style="display: none" class="form-control" id="chat-message" rows="3"
+                                                  placeholder="输入您想对数字人说的话..."></textarea>
+                                    <button style="display: none" class="btn btn-primary" type="submit">
+                                        <i style="display: none" class="bi bi-send"></i> 发送
+
+                                    </button>
+
+                                </div>
+                                <input type="text" id="chat-message1"
+                                       class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:input-focus-ring text-lg"
+                                       placeholder="正在监听语音...">
+                            </form>
+
+
+                            <!-- 按钮容器 - 只保留按住说话按钮 -->
+                            <div class="button-container hidden" style="display: none">
+                                <!-- 按住说话按钮 -->
+                                <div class="voice-record-btn" id="voice-record-btn">
+                                    <i class="bi bi-mic-fill"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 朗读模式 -->
+                        <div class="tab-pane fade" id="tts" role="tabpanel" aria-labelledby="tts-tab">
+                            <form id="echo-form">
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">输入要朗读的文本</label>
+                                    <textarea class="form-control" id="message" rows="6"
+                                              placeholder="输入您想让数字人朗读的文字..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-volume-up"></i> 朗读文本
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 隐藏的会话ID -->
+<input type="hidden" id="sessionid" value="0">
+
+
+<script src="client.js"></script>
+<script src="srs.sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+
+    $(document).ready(function () {
+
+        const inputField = document.getElementById('chat-message1');
+
+        let recognition1;
+        let listening = false;
+        let lastSpeechTime = 0;
+        let speechTimeout;
+        let consecutiveNoSpeechCount = 0;
+
+        // 检查浏览器支持
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            inputField.placeholder = '您的浏览器不支持语音识别功能';
+            inputField.disabled = true;
+            return;
+        }
+// report_interpret  bool类型变量
+        let report_interpret = false;
+        // 是否回答问题
+        let qa_flag = false;
+        // 是否进行总结
+        let total_interpret = false;
+        // 问题temp
+        let question = '';
+        // 按系统划分，异常解析队列
+        let interpretation_queue = [];
+        // 按系统划分，问题队列
+        let question_queue = [];
+        let allRl=[];
+        // 用于遍历解析队列，出队接收
+        let interpretation1 = '';
+        // 剩余未回答的问题数
+        let qa_numb = 0;
+        // user_id 假数据
+        var id = 1;
+        let A = false;
+        let level=1;
+        let singleWords = '';
+        // 初始化识别器
+        function initRecognition() {
+            recognition1 = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition1.continuous = true;
+            recognition1.interimResults = true;
+            recognition1.lang = 'zh-CN';
+
+            recognition1.onstart = function () {
+                A = true;
+                // interrupt()
+            };
+
+            // 设置语音识别结果处理函数
+            recognition1.onresult = function (event) {
+                if (A){
+                    interrupt();
+                    console.log("我开始发请求了")
+                    A = false;
+                }
+
+                let interimTranscript = '';
+                let finalTranscript = '';
+                //if(level>5) {
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                        singleWords += finalTranscript;
+                        console.log("这一次说话结束:"+finalTranscript)
+                        // 应用文本优化
+                        finalTranscript = optimizeTranscript(finalTranscript);
+                    } else {
+
+                        interimTranscript += event.results[i][0].transcript;
+                        console.log("说话中:"+interimTranscript)
+                        // 应用文本优化
+                        interimTranscript = optimizeTranscript(interimTranscript);
+                    }
+                }
+
+                // 更新输入框内容
+                if (finalTranscript) {
+                    inputField.value = singleWords;
+                    //console.log("fin:"+finalTranscript)
+                    console.log("final:"+inputField.value)
+                    // 检测到语音，更新最后语音时间
+                    lastSpeechTime = Date.now();
+                } else if (interimTranscript) {
+                    inputField.value = singleWords+interimTranscript;
+                    //console.log("int"+interimTranscript)
+                    // 检测到语音，更新最后语音时间
+                    lastSpeechTime = Date.now();
+                }
+
+                if (interimTranscript || finalTranscript) {
+                    consecutiveNoSpeechCount = 0;
+
+
+                    // 重置超时计时器
+                    resetSpeechTimeout();
+                } else {
+                    // 连续几次没有识别到语音
+                    consecutiveNoSpeechCount++;
+                    if (consecutiveNoSpeechCount >= 3) {
+
+                    }
+                }
+                // }
+            };
+
+            // 语音识别错误处理
+            recognition1.onerror = function (event) {
+                // console.error('语音识别错误:', event.error);
+
+
+                // 如果是网络错误，停止监听
+                if (event.error === 'network') {
+                    stopListening();
+                }
+            };
+
+            // 语音识别结束处理
+            recognition1.onend = function () {
+                if (listening) {
+                    // 如果是主动监听状态，重新启动识别
+                    setTimeout(() => {
+                        try {
+                            recognition1.start();
+
+                        } catch (e) {
+                            console.error('重新启动识别失败:', e);
+
+                        }
+                    }, 500);
+                } else {
+                }
+            };
+
+            // 监听语音音量
+            setupAudioLevelMonitoring();
+        }
+
+        // 设置语音音量监控
+        function setupAudioLevelMonitoring() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                return;
+            }
+
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) {
+                return;
+            }
+
+            let audioContext;
+            let analyser;
+            let microphone;
+            let scriptProcessor;
+            var id=1;
+
+            // 在原有代码基础上添加高级降噪功能
+            recognition1.onaudiostart = function () {
+                if (!audioContext) {
+                    audioContext = new AudioContext();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256;
+
+                    // 获取麦克风输入，启用浏览器内置降噪
+                    navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            noiseSuppression: true,   // 启用浏览器硬件降噪
+                            echoCancellation: true,   // 启用回声消除
+                            autoGainControl: true,    // 启用自动增益控制
+                            channelCount: 1           // 使用单声道，减少处理复杂度
+                        },
+                        video: false
+                    })
+                        .then(function (stream) {
+                            microphone = audioContext.createMediaStreamSource(stream);
+
+                            // 创建降噪处理链
+                            // 1. 高通滤波器：去除低频噪音（如空调、风扇）
+                            highPassFilter = audioContext.createBiquadFilter();
+                            highPassFilter.type = "highpass";
+                            highPassFilter.frequency.value = 80;  // 过滤80Hz以下的低频
+                            highPassFilter.Q.value = 0.5;
+
+                            // 2. 低通滤波器：去除高频噪音（如键盘、鼠标）
+                            lowPassFilter = audioContext.createBiquadFilter();
+                            lowPassFilter.type = "lowpass";
+                            lowPassFilter.frequency.value = 8000; // 过滤8000Hz以上的高频
+                            lowPassFilter.Q.value = 0.5;
+
+                            // 3. 带阻滤波器：去除特定频率的噪音（如电脑风扇、电源噪音）
+                            notchFilter1 = audioContext.createBiquadFilter();
+                            notchFilter1.type = "notch";
+                            notchFilter1.frequency.value = 60;    // 电源频率噪音（50Hz或60Hz）
+                            notchFilter1.Q.value = 30;
+
+                            notchFilter2 = audioContext.createBiquadFilter();
+                            notchFilter2.type = "notch";
+                            notchFilter2.frequency.value = 120;   // 电源谐波
+                            notchFilter2.Q.value = 30;
+
+                            // 4. 动态压缩器：平衡音量，减少峰值噪音
+                            compressor = audioContext.createDynamicsCompressor();
+                            compressor.threshold.value = -50;     // 阈值
+                            compressor.knee.value = 40;           // 拐点
+                            compressor.ratio.value = 12;          // 压缩比
+                            compressor.attack.value = 0;          // 攻击时间
+                            compressor.release.value = 0.25;      // 释放时间
+
+                            // 5. 噪声门限：低于阈值的声音将被静音
+                            noiseGate = audioContext.createGain();
+
+                            // 连接音频节点链
+                            microphone.connect(highPassFilter);
+                            highPassFilter.connect(lowPassFilter);
+                            lowPassFilter.connect(notchFilter1);
+                            notchFilter1.connect(notchFilter2);
+                            notchFilter2.connect(compressor);
+                            compressor.connect(noiseGate);
+                            noiseGate.connect(analyser);
+
+                            // 保持原有的分析器和处理器连接
+                            scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+                            analyser.connect(scriptProcessor);
+                            scriptProcessor.connect(audioContext.destination);
+
+                            // 初始化噪声门限参数
+                            let noiseGateThreshold = 15;          // 噪声门限阈值
+                            let noiseGateReleaseTime = 500;       // 噪声门限释放时间(ms)
+                            let lastVoiceTime = Date.now();       // 上次检测到语音的时间
+
+                            // 初始化咳嗽检测参数
+                            let coughDetectionEnabled = true;     // 是否启用咳嗽检测
+                            let coughDetectionThreshold = 30;     // 咳嗽检测能量阈值
+                            let coughSpectralFlatnessThreshold = 0.8; // 频谱平坦度阈值（咳嗽声通常频谱平坦）
+                            let minCoughDuration = 50;            // 最小咳嗽持续时间(ms)
+                            let maxCoughDuration = 300;           // 最大咳嗽持续时间(ms)
+                            let lastCoughStartTime = 0;           // 上次咳嗽开始时间
+                            let isCoughing = false;               // 当前是否正在咳嗽
+
+                            // 高级音频处理
+                            scriptProcessor.onaudioprocess = function () {
+                                if (!listening) return;
+
+                                // 获取频率数据
+                                const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+                                analyser.getByteFrequencyData(frequencyData);
+
+                                // 获取时域数据（波形）
+                                const timeDomainData = new Uint8Array(analyser.frequencyBinCount);
+                                analyser.getByteTimeDomainData(timeDomainData);
+
+                                // 计算平均音量（能量）
+                                let totalEnergy = 0;
+                                for (let i = 0; i < frequencyData.length; i++) {
+                                    totalEnergy += frequencyData[i] * frequencyData[i]; // 使用平方增强差异
+                                }
+                                const averageEnergy = Math.sqrt(totalEnergy / frequencyData.length);
+
+                                // 更新音量指示器 (0-100%)
+                                level = Math.min(100, Math.max(0, averageEnergy * 0.2));
+
+                                // 计算频谱平坦度（用于区分人声和杂音，如咳嗽）
+                                // 频谱平坦度接近1表示频谱分布均匀（噪声特征），接近0表示分布集中（语音特征）
+                                let spectralFlatness = 0;
+                                if (averageEnergy > 0) {
+                                    let geometricMean = 1;
+                                    let arithmeticMean = 0;
+
+                                    for (let i = 0; i < frequencyData.length; i++) {
+                                        // 避免对0取对数
+                                        const value = Math.max(frequencyData[i], 0.001);
+                                        geometricMean *= Math.pow(value, 1 / frequencyData.length);
+                                        arithmeticMean += value;
+                                    }
+
+                                    arithmeticMean /= frequencyData.length;
+                                    spectralFlatness = geometricMean / arithmeticMean;
+                                }
+
+                                // 咳嗽检测逻辑
+                                const now = Date.now();
+                                const isVoice = averageEnergy > noiseGateThreshold;
+
+                                if (isVoice) {
+                                    lastVoiceTime = now;
+
+                                    // 检测可能的咳嗽：能量高 + 频谱平坦度高
+                                    if (coughDetectionEnabled &&
+                                        averageEnergy > coughDetectionThreshold &&
+                                        spectralFlatness > coughSpectralFlatnessThreshold) {
+
+                                        // 开始新的咳嗽检测
+                                        if (!isCoughing) {
+                                            isCoughing = true;
+                                            lastCoughStartTime = now;
+                                        }
+                                    } else {
+                                        // 不是咳嗽，重置咳嗽状态
+                                        isCoughing = false;
+                                    }
+                                } else {
+                                    // 检查是否咳嗽结束
+                                    if (isCoughing) {
+                                        const coughDuration = now - lastCoughStartTime;
+
+                                        // 如果咳嗽持续时间在合理范围内，确认为咳嗽
+                                        if (coughDuration >= minCoughDuration && coughDuration <= maxCoughDuration) {
+                                            console.log("检测到咳嗽，已过滤", coughDuration, "ms");
+                                            // 这里可以添加咳嗽后的特殊处理
+                                        }
+
+                                        isCoughing = false;
+                                    }
+                                }
+
+                                // 动态噪声门限控制
+                                // 如果长时间没有语音活动，且当前能量低于阈值，关闭噪声门
+                                if (now - lastVoiceTime > noiseGateReleaseTime && averageEnergy < noiseGateThreshold) {
+                                    noiseGate.gain.value = 0; // 静音
+                                } else {
+                                    // 检测到语音或刚结束语音，打开噪声门
+                                    // 如果正在咳嗽，也可以选择静音
+                                    noiseGate.gain.value = isCoughing ? 0 : 1;
+                                }
+
+                                // 可选：动态调整滤波器参数
+                                // 例如：在低能量时增加滤波强度，在高能量时减少滤波避免失真
+                                if (averageEnergy < 10) {
+                                    highPassFilter.frequency.value = 100; // 低能量时提高高通截止频率
+                                } else {
+                                    highPassFilter.frequency.value = 80;  // 恢复默认
+                                }
+                            };
+                        })
+                        .catch(function (err) {
+                            console.error('获取麦克风权限失败:', err);
+                            inputField.placeholder = '无法访问麦克风，请检查权限';
+                            inputField.disabled = true;
+                        });
+                }
+            };
+
+        }
+
+
+        // 文本优化函数，提高识别准确率
+        function optimizeTranscript(text) {
+            if (!text) return '';
+
+            // 替换常见的语音识别错误
+            const corrections = [
+                // 同音字词修正
+                [/的/g, '的'],
+                [/地/g, '地'],
+                [/得/g, '得'],
+                [/在/g, '在'],
+                [/再/g, '再'],
+                [/像/g, '像'],
+                [/向/g, '向'],
+                [/做/g, '做'],
+                [/作/g, '作'],
+                [/和/g, '和'],
+                [/与/g, '与'],
+                [/那/g, '那'],
+                [/哪/g, '哪'],
+                [/吧/g, '吧'],
+                [/把/g, '把'],
+
+                // 标点符号添加
+                [/，/g, ','],
+                [/。/g, '.'],
+                [/！/g, '!'],
+                [/？/g, '?'],
+                [/；/g, ';'],
+                [/：/g, ':'],
+                [/“/g, '"'],
+                [/”/g, '"'],
+                [/‘/g, "'"],
+                [/’/g, "'"],
+                [/（/g, '('],
+                [/）/g, ')'],
+
+                // 移除多余空格
+                [/\s+/g, ' '],
+                [/^\s+|\s+$/g, ''],
+            ];
+
+            let optimizedText = text;
+            corrections.forEach(([pattern, replacement]) => {
+                optimizedText = optimizedText.replace(pattern, replacement);
+            });
+
+            return optimizedText;
+        }
+
+        // 开始监听
+        function startListening() {
+            if (listening) return;
+
+            if (!recognition1) {
+                initRecognition();
+            }
+
+            try {
+                recognition1.start();
+                listening = true;
+                inputField.disabled = false;
+
+                consecutiveNoSpeechCount = 0;
+
+                // 初始化最后语音时间
+                lastSpeechTime = Date.now();
+
+                // 设置初始超时
+                resetSpeechTimeout();
+            } catch (e) {
+                console.error('启动识别器失败:', e);
+
+                inputField.placeholder = '无法启动语音识别';
+                inputField.disabled = true;
+            }
+        }
+
+        // 停止监听
+        function stopListening() {
+            if (!listening) return;
+
+            clearTimeout(speechTimeout);
+            recognition1.stop();
+            listening = false;
+
+        }
+
+        // 重置语音超时计时器
+        function resetSpeechTimeout() {
+            clearTimeout(speechTimeout);
+
+            speechTimeout = setTimeout(function () {
+                const now = Date.now();
+                // 检查是否2秒内没有语音输入
+                if (now - lastSpeechTime >= 5000) {
+                    send();
+                } else {
+                    // 如果还没到2秒，再等一会儿
+                    resetSpeechTimeout();
+                }
+            }, 500);
+        }
+/////
+        function interrupt() {
+
+
+            // console.log('发送消息:', text);
+            // 这里可以添加发送到服务器的逻辑
+
+            // 根据report_interpret判断是生成问题还是rag问答
+            fetch('/human', {
+                body: JSON.stringify({
+                    text: "",
+                    type: 'interrupt',
+                    user_id: id,  // 用户id
+                    interrupt: true,  // 是否打断
+                    qa_numb: 0, // hra问题数量
+                    report_interpret: false, // hra解析
+                    total_interpret: false,  // hra总结
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`网络错误: ${response.status}`);
+                }
+                return response.json(); // 解析JSON响应
+            }).then(result => {
+                if (result.code === 0) {
+
+                    console.log('操作成功:', result);
+
+                    // 处理成功逻辑，例如更新UI
+                } else {
+                    throw new Error(`业务错误: ${result.code}`);
+                    //addChatMessage(result.data, 'user')
+                }
+            }).catch(error => {
+                console.error('请求失败:', error.message);
+                // 显示错误消息给用户
+                alert(`操作失败: ${error.message}`);
+            });
+
+
+            // 清空输入框，准备下一次输入
+            inputField.value = '';
+
+
+            consecutiveNoSpeechCount = 0;
+
+        }
+
+//////////////
+        $('#ids').on('click',function (e){
+            id=$('#ids').val()
+            id=parseInt(id)
+        })
+        // 发送消息方法
+        //hra开始
+        str1="体检报告"
+        str2="hra报告"
+        str3="hr报告"
+        str4="h2a"
+        //结束语
+        strEnd1="继续"
+        strEnd2="完毕"
+        strEnd3="下一条"
+        //区分HRA对话，普通问答，HRA+普通问答
+        var shiftDemo=1//1.日常对话  2.开始HRA问答 3.HRA中日常问答 4.HRA提问 5.收录HRA回答
+        var recentMessage//记录当前hra存储的系统
+        var commonDemo=false//判断是否hra中日常问答要进行
+        var tmpHRA=false//判断是否第一次进了HRA问答
+        async function startTalk(){
+            const text = inputField.value.trim();
+            inputField.value=""
+           addChatMessage(text, 'user');
+            if (text) {
+                if (text.includes(str1) || text.includes(str2) || text.includes(str3) || text.includes(str4)) {
+                    tmpHRA=true
+                    addChatMessage("已开始解读您的hra体检报告", 'system');
+                    shiftDemo = 2
+                }
+                if (text.includes(strEnd1) || text.includes(strEnd2) || text.includes(strEnd3) ){
+                    shiftDemo=4
+                    qa_numb--;
+
+                }
+                if(shiftDemo===1){
+                    await  commonSend(text)
+                }
+
+                else if (shiftDemo===2) {
+                    if(tmpHRA) await  getAll()
+                    else {
+                        ////入库操作
+                        allRl.push(text)
+                        if(qa_numb===0){
+                            shiftDemo=1;
+
+                            tmpHRA=false
+                        }
+                        await  hraSend()
+                    }
+                    shiftDemo=3//开始日常问答
+                }
+                else if(shiftDemo===3){
+                    await commonSend(recentMessage+":"+text)
+
+                }
+                else if(shiftDemo===4){
+                    await queSend()
+                    shiftDemo=2
+
+                }
+
+            }
+
+        }
+        function hraSend(){
+
+            recentMessage=interpretation_queue.shift();
+            np_read(recentMessage)
+
+
+
+        }
+        function queSend(){
+            queMessage=question_queue.shift()
+            np_read(queMessage)
+
+        }
+
+        function commonSend(message){
+            fetch('/hraHuman', {
+                body: JSON.stringify({
+                    text: message,
+                    type: 'chat',
+                    user_id: id,  // 用户id
+                    interrupt: true,  // 是否打断
+                    qa_numb:qa_numb, // hra问题数量
+                    report_interpret: false, // hra解析
+                    total_interpret: false,  // hra总结
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`网络错误: ${response.status}`);
+                }
+                return response.json(); // 解析JSON响应
+            }).then(result =>{
+                addChatMessage(result["data"],'system')
+
+            })
+        }
+        // hra解析
+        function getAll(){
+            fetch('/hraHuman', {
+                body: JSON.stringify({
+                    text: "",
+                    type: 'getHra',
+                    user_id: id,  // 用户id
+                    interrupt: true,  // 是否打断
+                    qa_numb:qa_numb, // hra问题数量
+                    report_interpret: true, // hra解析
+                    total_interpret: false,  // 问答的总结
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`网络错误: ${response.status}`);
+                }
+                return response.json(); // 解析JSON响应
+            }).then(result =>{
+                for (let i = 0; i < result.data.length; i++) {
+                    interpretation_queue.push(result.data[i].interpretation);
+                    question_queue.push(result.data[i].questions);
+                    qa_numb++;
+                }
+                hraSend()
+            })
+        }
+
+
+        ///
+        function send() {
+
+            const text = inputField.value.trim();
+
+            if (text) {
+                str1="体检报告"
+                str2="hra报告"
+                str3="hr报告"
+                str4="h2a"
+                if (text.includes(str1)||text.includes(str2)||text.includes(str3)||text.includes(str4)){
+                    report_interpret = true;
+                    addChatMessage(text, 'user');
+                    $('#hra-toggle-btn').click();
+                }else{
+                    addChatMessage(text, 'user');
+                }
+                if(report_interpret) {
+                    //$('#hra-toggle-btn').click();
+
+                    ///////////////////////////
+
+                    var message = text;
+                    if (!message.trim()) return;
+
+                    console.log('hra流程:', message);
+
+
+                    if (qa_flag == true) {
+                        // 问题已经产生，开始回答，qa信息入库
+                        qa_numb --;
+                        console.log("回答问题中...");
+                        message = "\"question\":\"" + question + "\",\"answer\":\"" + message+"\"";
+                        fetch('/human', {
+                            body: JSON.stringify({
+                                text: message,
+                                type: 'answer',
+                                user_id: id,
+                                interrupt: true,
+                                qa_numb: qa_numb,
+                                report_interpret:report_interpret,
+                                total_interpret: total_interpret,
+                                sessionid: parseInt(document.getElementById('sessionid').value),
+                            }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            method: 'POST'
+                        }).then(response => {
+                            if (!response.ok) {
+                                throw new Error(`网络错误: ${response.status}`);
+                            }
+                            return response.json(); // 解析JSON响应
+                        }).then(result => {
+                            if (result.code === 0) {
+                                //
+
+                                // 记录完回答重新改为chat模式
+                                total_interpret = result.total_interpret;
+                                if (question_queue.length > 0) {
+                                    interpretation1 = interpretation_queue.shift();
+                                    question = question_queue.shift();
+
+                                    np_read(interpretation1+question, 'system');
+
+                                }else{
+
+                                    if("start_summary" in result && result.start_summary){
+                                        qa_flag = false;
+                                        addChatMessage(result.data,'system')
+                                        // 这里是生成总结
+                                        total_chat('','chat',id,true,parseInt(document.getElementById('sessionid').value),
+                                            qa_numb,report_interpret,total_interpret)
+                                        // 总结结束后，取消HRA选择的按钮
+                                    }
+
+                                }
+
+                                console.log("回答问题中....")
+                            } else {
+                                throw new Error(`业务错误: ${result.code}`);
+                            }
+                        }).catch(error => {
+                            console.error('请求失败:', error.message);
+                            // 显示错误消息给用户
+                            alert(`操作失败: ${error.message}`);
+                        });
+                    }
+                    else {
+                        stopListening();
+                        dem1='正在解析您的体检报告，请您稍等一段时间。惠惠温馨提示：想要拥有健康的身体，离不开科学的生活方式。在饮食上，应遵循均衡原则，每餐保证主食、蛋白质、蔬菜的合理搭配。多吃富含膳食纤维的粗粮，如燕麦、糙米，搭配鱼肉、豆类等优质蛋白，同时每天摄入 500 克新鲜蔬菜和 200-350 克水果，既能补充维生素和矿物质，又能增强饱腹感。避免高油、高盐、高糖食物，减少外卖和加工食品的摄入，多喝水促进新陈代谢。运动方面，每周至少进行 150 分钟中等强度有氧运动，如快走、慢跑、游泳，也可搭配力量训练，如俯卧撑、深蹲，增强肌肉力量和骨骼密度。即使工作繁忙，也可利用碎片时间，如爬楼梯、步行上下班会，避免久坐，每隔 1 小时起身活动 5-10 分钟。良好的作息同样关键，每天尽量保证 7-8 小时的充足睡眠，固定作息时间，睡前 1 小时不使用电子设备，营造安静舒适的睡眠环境。同时，保持积极乐观的心态，学会通过冥想、听音乐、与朋友倾诉等方式释放压力，让身心都处于健康状态。这些建议涵盖生活常见场景，能帮助你逐步改善健康状况。若你想针对某个方面深入了解，或有其他需求，欢迎告诉我。您的HRA报告解析即将完成，请您再稍微等待一会。'
+                        //np_read(dem1,"system")
+
+
+                        // 根据report_interpret判断是生成问题还是rag问答
+                        fetch('/human', {
+                            body: JSON.stringify({
+                                text: message,
+                                type: 'chat',
+                                user_id: id,  // 用户id
+                                interrupt: true,  // 是否打断
+                                qa_numb:qa_numb, // hra问题数量
+                                report_interpret: report_interpret, // hra解析
+                                total_interpret: total_interpret,  // hra总结
+                                sessionid: parseInt(document.getElementById('sessionid').value),
+                            }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            method: 'POST'
+                        }).then(response => {
+                            if (!response.ok) {
+                                throw new Error(`网络错误: ${response.status}`);
+                            }
+                            return response.json(); // 解析JSON响应
+                        }).then(result => {
+                            if (result.code === 0) {
+                                if ("is_qa" in result && result.is_qa) {
+                                    qa_numb= 1;
+                                    console.log("开始展示问题")
+                                    addChatMessage("成功获取HRA报告解读",'system')
+                                    startListening();
+
+
+                                    // 先读出第一个解析和问题，然后剩下的存队列，回答时进行出队操作
+                                    np_read(result.data[0].interpretation+result.data[0].questions, 'system')
+                                    // setTimeout(()=>{np_read(result.data[0].question, 'system')},1000);
+                                    question = result.data[0].questions
+                                    for (let i = 1; i < result.data.length; i++) {
+                                        interpretation_queue.push(result.data[i].interpretation);
+                                        question_queue.push(result.data[i].questions);
+                                        qa_numb++;
+                                    }
+                                    qa_flag = true;
+                                }
+                                else{
+                                    console.log("这是哪里????")
+                                    addChatMessage(result.data, 'system');
+                                }
+                                // addChatMessage(result.data, 'system');
+                                //for (let i = 0; i < result.data.length; i++) {
+                                //    let system_message = result.data[i].system_name+result.data[i].interpretation
+                                //    addChatMessage(system_message, 'system');
+                                // }
+                                // console.log('操作成功:', result);
+
+                                // 处理成功逻辑，例如更新UI
+                            } else {
+                                throw new Error(`业务错误: ${result.code}`);
+                                //addChatMessage(result.data, 'user')
+                            }
+                        }).catch(error => {
+                            console.error('请求失败:', error.message);
+                            // 显示错误消息给用户
+                            alert(`操作失败: ${error.message}`);
+                        });
+
+
+                        setTimeout(()=>{
+                            fetch('/human', {
+                                body: JSON.stringify({
+                                    text: dem1,
+                                    type: 'read',
+                                    interrupt: false,
+                                    report_interpret: report_interpret,
+                                    user_id: id,
+                                    sessionid: parseInt(document.getElementById('sessionid').value),
+                                }),
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                method: 'POST'
+                            }).then(result => {
+                                if (result.code === 0) {
+
+                                    console.log('操作成功:', result);
+
+                                    // 处理成功逻辑，例如更新UI
+                                } else {
+                                    throw new Error(`业务错误: ${result.code}`);
+                                    //addChatMessage(result.data, 'user')
+                                }
+                            }).catch(error => {
+                                //console.error('请求失败:', error.message);
+                                // 显示错误消息给用户
+                                //alert(`操作失败: ${error.message}`);
+                            });
+                        },1000)
+                    }
+
+
+                    inputField.value = "";
+                    singleWords = '';
+                }else{
+
+                    // 这个可能多了一个addChatMessage
+                    addChatMessage(text,'user');
+                    ///////////////////////////
+                    console.log('普通问答:', text);
+                    // 这里可以添加发送到服务器的逻辑
+
+                    // 根据report_interpret判断是生成问题还是rag问答
+                    fetch('/human', {
+                        body: JSON.stringify({
+                            text: text,
+                            type: 'chat',
+                            user_id: 1,  // 用户id
+                            interrupt: true,  // 是否打断
+                            qa_numb: 0, // hra问题数量
+                            report_interpret: false, // hra解析
+                            total_interpret: false,  // hra总结
+                            sessionid: parseInt(document.getElementById('sessionid').value),
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        method: 'POST'
+                    }).then(response => {
+                        if (!response.ok) {
+                            throw new Error(`网络错误: ${response.status}`);
+                        }
+                        return response.json(); // 解析JSON响应
+                    }).then(result => {
+                        if (result.code === 0) {
+                            addChatMessage(result.data, 'system')
+                            //console.log('请求后端成功:', result);
+
+                            // 处理成功逻辑，例如更新UI
+                        } else {
+                            throw new Error(`业务错误: ${result.code}`);
+                            //addChatMessage(result.data, 'user')
+                        }
+                    }).catch(error => {
+                        // console.error('请求失败:', error.message);
+                        // 显示错误消息给用户
+                        // alert(`操作失败: ${error.message}`);
+                    });
+
+
+                    // 清空输入框，准备下一次输入
+                    inputField.value = '';
+                    singleWords = '';
+                }
+            }
+            consecutiveNoSpeechCount = 0;
+
+            // 继续监听
+            resetSpeechTimeout();
+        }
+
+        // 初始化时自动开始监听
+        // startListening();
+
+        // 页面可见性变化时暂停/恢复监听
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                //stopListening();
+            } else {
+                //startListening();
+            }
+        });
+
+
+        // -------------------------
+        $('#video-size-slider').on('input', function () {
+            const value = $(this).val();
+            $('#video-size-value').text(value + '%');
+            $('#video').css('width', value + '%');
+        });
+
+        // 新增功能
+        let isChecked = false;
+
+        function toggleCheck() {
+            const checkBtn = document.getElementById('check-btn');
+            const checkIcon = checkBtn.querySelector('i');
+            isChecked = !isChecked;
+            if (isChecked) {
+                checkBtn.classList.add('checked');
+                checkIcon.style.display = 'block';
+                console.log('选中状态：True');
+            } else {
+                checkBtn.classList.remove('checked');
+                checkIcon.style.display = 'none';
+                console.log('选中状态：False');
+            }
+        }
+
+        function updateConnectionStatus(status) {
+            const statusIndicator = $('#connection-status');
+            const statusText = $('#status-text');
+
+            statusIndicator.removeClass('status-connected status-disconnected status-connecting');
+
+            switch (status) {
+                case 'connected':
+                    statusIndicator.addClass('status-connected');
+                    statusText.text('已连接');
+
+                    break;
+                case 'connecting':
+                    statusIndicator.addClass('status-connecting');
+                    statusText.text('连接中...');
+                    break;
+                case 'disconnected':
+                    statusIndicator.addClass('status-disconnected');
+                    statusText.text('未连接');
+                    break;
+
+                default:
+                    statusIndicator.addClass('status-disconnected');
+                    statusText.text('未连接');
+
+                    break;
+            }
+        }
+
+        // 添加聊天消息
+        function addChatMessage(message, type = 'user') {
+            const messagesContainer = $('#chat-messages');
+            const messageClass = type === 'user' ? 'user-message' : 'system-message';
+            const sender = type === 'user' ? '您' : '惠惠';
+
+            const messageElement = $(`
+                    <div class="asr-text ${messageClass}">
+                        ${sender}: ${message}
+                    </div>
+                `);
+
+            messagesContainer.append(messageElement);
+            messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
+        }
+
+        // 开始/停止按钮
+        $('#start').click(function () {
+            startListening()
+            updateConnectionStatus('connecting');
+            start();
+            $(this).hide();
+            $('#stop').show();
+
+            // 添加定时器检查视频流是否已加载
+            let connectionCheckTimer = setInterval(function () {
+                const video = document.getElementById('video');
+                // 检查视频是否有数据
+                if (video.readyState >= 3 && video.videoWidth > 0) {
+                    updateConnectionStatus('connected');
+                    clearInterval(connectionCheckTimer);
+                }
+            }, 2000); // 每2秒检查一次
+
+            // 60秒后如果还是连接中状态，就停止检查
+            setTimeout(function () {
+                if (connectionCheckTimer) {
+                    clearInterval(connectionCheckTimer);
+                }
+            }, 60000);
+        });
+
+        $('#stop').click(function () {
+
+            //interrupt()
+            //
+            fetch('/human', {
+                body: JSON.stringify({
+                    text: "",
+                    type: 'interrupt',
+                    user_id: id,  // 用户id
+                    interrupt: true,  // 是否打断
+                    qa_numb: 0, // hra问题数量
+                    report_interpret: false, // hra解析
+                    total_interpret: false,  // hra总结
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`网络错误: ${response.status}`);
+                }
+                return response.json(); // 解析JSON响应
+            }).then(result => {
+                if (result.code === 0) {
+                    stopListening();
+                    console.log('关闭连接成功:', result);
+
+                    // 处理成功逻辑，例如更新UI
+                } else {
+                    throw new Error(`业务错误: ${result.code}`);
+                    //addChatMessage(result.data, 'user')
+                }
+            }).catch(error => {
+                console.error('请求失败:', error.message);
+                // 显示错误消息给用户
+                alert(`操作失败: ${error.message}`);
+            });
+
+
+            // 清空输入框，准备下一次输入
+            inputField.value = '';
+
+
+            consecutiveNoSpeechCount = 0;
+
+            //
+            //stopListening()
+            setTimeout(()=>{
+                stop();
+            },3000)
+
+
+
+            $(this).hide();
+            $('#start').show();
+            updateConnectionStatus('disconnected');
+        });
+
+        // 录制功能
+        $('#btn_start_record').click(function () {
+            console.log('Starting recording...');
+            fetch('/record', {
+                body: JSON.stringify({
+                    type: 'start_record',
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(function (response) {
+                if (response.ok) {
+                    console.log('Recording started.');
+                    $('#btn_start_record').prop('disabled', true);
+                    $('#btn_stop_record').prop('disabled', false);
+                    $('#recording-indicator').addClass('active');
+                } else {
+                    console.error('Failed to start recording.');
+                }
+            }).catch(function (error) {
+                console.error('Error:', error);
+            });
+        });
+
+        $('#btn_stop_record').click(function () {
+            console.log('Stopping recording...');
+            fetch('/record', {
+                body: JSON.stringify({
+                    type: 'end_record',
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(function (response) {
+                if (response.ok) {
+                    console.log('Recording stopped.');
+                    $('#btn_start_record').prop('disabled', false);
+                    $('#btn_stop_record').prop('disabled', true);
+                    $('#recording-indicator').removeClass('active');
+                } else {
+                    console.error('Failed to stop recording.');
+                }
+            }).catch(function (error) {
+                console.error('Error:', error);
+            });
+        });
+
+        $('#echo-form').on('submit', function (e) {
+            e.preventDefault();
+            var message = $('#message').val();
+            if (!message.trim()) return;
+
+            console.log('Sending echo message:', message);
+
+            fetch('/human', {
+                body: JSON.stringify({
+                    text: message,
+                    type: 'echo',
+                    interrupt: true,
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            });
+
+            $('#message').val('');
+            addChatMessage(`已发送朗读请求: "${message}"`, 'system');
+        });
+
+
+
+        // 聊天模式表单提交
+        $('#chat-form').on('submit', function (e) {
+
+            e.preventDefault();
+            var message = $('#chat-message').val();
+            if (!message.trim()) return;
+
+            console.log('Sending chat message:', message);
+            addChatMessage(message, 'user');
+
+            if (qa_flag == true) {
+                // 问题已经产生，开始回答，qa信息入库
+                qa_numb--;
+                console.log(qa_numb);
+                message = "\"question\":\"" + question + "\",\"answer\":\"" + message + "\"";
+                fetch('/human', {
+                    body: JSON.stringify({
+                        text: message,
+                        type: 'answer',
+                        user_id: id,
+                        interrupt: true,
+                        qa_numb: qa_numb,
+                        report_interpret: report_interpret,
+                        total_interpret: total_interpret,
+                        sessionid: parseInt(document.getElementById('sessionid').value),
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'POST'
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error(`网络错误: ${response.status}`);
+                    }
+                    return response.json(); // 解析JSON响应
+                }).then(result => {
+                    if (result.code === 0) {
+                        //
+
+                        // 记录完回答重新改为chat模式
+                        total_interpret = result.total_interpret;
+                        if (question_queue.length > 0) {
+                            interpretation1 = interpretation_queue.shift();
+                            question = question_queue.shift();
+
+                            np_read(interpretation1 + question, 'system');
+
+                        } else {
+
+                            if ("start_summary" in result && result.start_summary) {
+                                qa_flag = false;
+                                addChatMessage(result.data, 'system')
+                                // 这里是生成总结
+                                total_chat('', 'chat', id, true, parseInt(document.getElementById('sessionid').value),
+                                    qa_numb, report_interpret, total_interpret)
+                                // 总结结束后，取消HRA选择的按钮
+                            }
+
+                        }
+
+                        console.log("回答问题中....")
+                    } else {
+                        throw new Error(`业务错误: ${result.code}`);
+                    }
+                }).catch(error => {
+                    console.error('请求失败:', error.message);
+                    // 显示错误消息给用户
+                    alert(`操作失败: ${error.message}`);
+                });
+            } else {
+                // 根据report_interpret判断是生成问题还是rag问答
+                fetch('/human', {
+                    body: JSON.stringify({
+                        text: message,
+                        type: 'chat',
+                        user_id: id,  // 用户id
+                        interrupt: true,  // 是否打断
+                        qa_numb: qa_numb, // hra问题数量
+                        report_interpret: report_interpret, // hra解析
+                        total_interpret: total_interpret,  // hra总结
+                        sessionid: parseInt(document.getElementById('sessionid').value),
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'POST'
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error(`网络错误: ${response.status}`);
+                    }
+                    return response.json(); // 解析JSON响应
+                }).then(result => {
+                    if (result.code === 0) {
+                        if ("is_qa" in result && result.is_qa) {
+                            qa_numb = 1;
+                            console.log("开始展示问题")
+                            // 先读出第一个解析和问题，然后剩下的存队列，回答时进行出队操作
+                            np_read(result.data[0].interpretation + result.data[0].questions, 'system')
+                            // setTimeout(()=>{np_read(result.data[0].question, 'system')},1000);
+                            question = result.data[0].questions
+                            for (let i = 1; i < result.data.length; i++) {
+                                interpretation_queue.push(result.data[i].interpretation);
+                                question_queue.push(result.data[i].questions);
+                                qa_numb++;
+                            }
+                            qa_flag = true;
+                        } else {
+                            addChatMessage(result.data, 'system');
+                        }
+                        // addChatMessage(result.data, 'system');
+                        //for (let i = 0; i < result.data.length; i++) {
+                        //    let system_message = result.data[i].system_name+result.data[i].interpretation
+                        //    addChatMessage(system_message, 'system');
+                        // }
+                        console.log('操作成功:', result);
+
+                        // 处理成功逻辑，例如更新UI
+                    } else {
+                        throw new Error(`业务错误: ${result.code}`);
+                        addChatMessage(result.data, 'user')
+                    }
+                }).catch(error => {
+                    console.error('请求失败:', error.message);
+                    // 显示错误消息给用户
+                    alert(`操作失败: ${error.message}`);
+                });
+            }
+
+
+            $('#chat-message').val('');
+        });
+
+
+        // WebRTC 相关功能
+        if (typeof window.onWebRTCConnected === 'function') {
+            const originalOnConnected = window.onWebRTCConnected;
+            window.onWebRTCConnected = function () {
+                updateConnectionStatus('connected');
+                if (originalOnConnected) originalOnConnected();
+            };
+        } else {
+            window.onWebRTCConnected = function () {
+                updateConnectionStatus('connected');
+            };
+        }
+
+        // 当连接断开时更新状态
+        if (typeof window.onWebRTCDisconnected === 'function') {
+            const originalOnDisconnected = window.onWebRTCDisconnected;
+            window.onWebRTCDisconnected = function () {
+                updateConnectionStatus('disconnected');
+                if (originalOnDisconnected) originalOnDisconnected();
+            };
+        } else {
+            window.onWebRTCDisconnected = function () {
+                updateConnectionStatus('disconnected');
+            };
+        }
+
+        // SRS WebRTC播放功能
+        var sdk = null; // 全局处理器，用于在重新发布时进行清理
+
+        function startPlay() {
+            // 关闭之前的连接
+            if (sdk) {
+                sdk.close();
+            }
+
+            sdk = new SrsRtcWhipWhepAsync();
+            $('#video').prop('srcObject', sdk.stream);
+
+            var host = window.location.hostname;
+            var url = "http://" + host + ":1985/rtc/v1/whep/?app=live&stream=livestream";
+
+            sdk.play(url).then(function (session) {
+                console.log('WebRTC播放已启动，会话ID:', session.sessionid);
+            }).catch(function (reason) {
+                sdk.close();
+                console.error('WebRTC播放失败:', reason);
+            });
+        }
+
+
+        $('#ids').on('click', function (e) {
+            id = $('#ids').val()
+            id = parseInt(id)
+        })
+
+        $('#radar-form').on('submit', function (e) {
+            e.preventDefault();
+
+
+            addChatMessage("雷达波检测中", 'system');
+            var message = JSON.stringify({
+                "user_id": 1,
+                "data": {
+                    "success": "true",
+                    "failReason": "null",
+                    "data": {
+                        "success": 1,
+                        "errorCode": 0,
+                        "csgCollectId": "a8afa745-819c-46a0-aea3-02cfd4de3884",
+                        "person": {
+                            "name": "hsap",
+                            "sex": "Male",
+                            "age": 26
+                        },
+                        "startTime": "1745819347505",
+                        "endTime": "1745819407505",
+                        "heartRate": 76,
+                        "conclusion": {
+                            "heartConclusion": "在此次检查中：\n您的平均心率 76 次/分钟，房颤发生概率 0%，早搏发生概率 75%，心动过速发生概率 0%，心动过缓发生概率 0%，心律不齐发生概率 44%，心脏收缩时间间期(PEP/LVET)为 0.0，心电波形(QRS)时限 - 毫秒，(QT)间期 - 毫秒，心率变异性(rMSSD)为 29.48 毫秒，LF/HF为1.02 毫秒。\n此段心电图疑似早搏；若出现心悸、气短、胸闷、眩晕等症状，请咨询医生做进一步检查。",
+                            "breathConclusion": "您的平均呼吸率 16 次/分钟，平均呼吸深度 9.0 毫米，呼气吸气比 5.73 。\n呼吸较深；若出现呼吸不畅、喘不上气、呼吸困难、头晕恶心等症状，请咨询医生做进一步检查。"
+                        },
+                        "sti": 0.0,
+                        "hrvFeature": {
+                            "sdnn": 25.753937,
+                            "rmssd": 29.48272,
+                            "pnn50": 0.46153846,
+                            "cvsd": 0.03916111,
+                            "cvcdi": 0.034208268,
+                            "lf": 273.5398,
+                            "hf": 267.2555,
+                            "lfHfRatio": 1.0235142
+                        },
+                        "breathFeature": {
+                            "breathRate": 16,
+                            "avgBreathDepth": 9.00252,
+                            "maxBreathDepth": 45.28404,
+                            "minBreathDepth": 1.2028135,
+                            "expiratoryTime": 825,
+                            "inspiratoryTime": 4725
+                        }
+                    }
+                }
+            })
+            var demo = $('#radar-textbox').val().trim()
+
+            if (demo !== "") {
+                ms = JSON.parse(demo);
+                ms.user_id = id
+                message = JSON.stringify(ms)
+                console.log(message)
+
+            }
+            fetch('/human', {
+                body: JSON.stringify({
+                    text: message,
+                    type: 'radar',
+                    report_interpret: false, //不是hra解析，默认false
+                    user_id: id,
+                    interrupt: true,
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(response => {
+                console.log(response)
+                if (!response.ok) {
+                    throw new Error(`网络错误: ${response.status}`);
+                }
+                return response.json(); // 解析JSON响应
+            }).then(result => {
+                console.log(result)
+                if (result.code === 0) {
+
+                    addChatMessage(result.data, 'system');
+                    console.log('操作成功:', result.data);
+
+                    // 处理成功逻辑，例如更新UI
+                } else {
+                    throw new Error(`业务错误: ${result.code}`);
+                }
+            })
+                .catch(error => {
+                    console.error('请求失败:', error.message);
+                    // 显示错误消息给用户
+                    alert(`操作失败: ${error.message}`);
+                });
+        });
+
+        // HRA解析按钮功能
+        let isHRAEnabled = false;
+        $('#user-select-btn').click(function () {
+            var hra_t = $('#hra-textbox').val()
+            fetch('/hra_t', {
+                body: JSON.stringify({
+                    text: hra_t,
+                    user_id: id,
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(response => {
+                console.log(response)
+                if (!response.ok) {
+                    throw new Error(`网络错误: ${response.status}`);
+                }
+                return response.json(); // 解析JSON响应
+            }).then(result => {
+                console.log(result)
+                if (result.code === 0) {
+
+                    addChatMessage(result.data, 'system');
+                    console.log('操作成功:', result.data);
+
+                    // 处理成功逻辑，例如更新UI
+                } else {
+                    throw new Error(`业务错误: ${result.code}`);
+                }
+            }).catch(error => {
+                console.error('请求失败:', error.message);
+                // 显示错误消息给用户
+                alert(`操作失败: ${error.message}`);
+            });
+        });
+
+
+        $('#hra-toggle-btn').click(function () {
+            isHRAEnabled = !isHRAEnabled;
+
+            if (isHRAEnabled) {
+                $(this).addClass('active');
+                report_interpret = true;
+                console.log('HRA解析已开启');
+
+                // 可以在这里添加HRA解析开启后的逻辑
+                addChatMessage('已开启HRA解析功能', 'system');
+            } else {
+                $(this).removeClass('active');
+                report_interpret = false;
+                console.log('HRA解析已关闭');
+
+                // 可以在这里添加HRA解析关闭后的逻辑
+                addChatMessage('已关闭HRA解析功能', 'system');
+            }
+        });
+
+        // 数字人读操作
+
+        function np_read(message, role) {
+            console.log("要读的信息：" + message)
+            fetch('/human', {
+                body: JSON.stringify({
+                    text: message,
+                    type: 'read',
+                    interrupt: false,
+                    report_interpret: report_interpret,
+                    user_id: id,
+                    sessionid: parseInt(document.getElementById('sessionid').value),
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(response => {
+                if (!response.ok) {
+
+                }
+                return response.json(); // 解析JSON响应
+            }).then(result => {
+                if (result.code === 0) {
+
+                    setTimeout(()=>{
+                        addChatMessage(message, role)
+                    },3000)
+
+
+
+                    console.log('读消息成功:', result);
+
+                    // 处理成功逻辑，例如更新UI
+                } else {
+                    throw new Error(`业务错误: ${result.code}`);
+                }
+            })
+                .catch(error => {
+                    console.error('请求失败:', error.message);
+                    // 显示错误消息给用户
+                    alert(`操作失败: ${error.message}`);
+                });
+
+        };
+
+        function total_chat(message, type, user_id, interrupt, sessionid, qa_numb, report_interpret, total_ip) {
+            // 根据report_interpret判断是生成问题还是普通问答
+            fetch('/human', {
+                body: JSON.stringify({
+                    text: message,
+                    type: type,
+                    user_id: user_id,
+                    interrupt: true,
+                    sessionid: sessionid,
+                    // 新增字段
+                    qa_numb: qa_numb,
+                    report_interpret: report_interpret,
+                    total_interpret: total_ip,
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST'
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`网络错误: ${response.status}`);
+                }
+                return response.json(); // 解析JSON响应
+            }).then(result => {
+                if (result.code === 0) {
+                    console.log("rag问答")
+                    addChatMessage(result.data, 'system');
+                    $('#hra-toggle-btn').click();
+                    total_interpret = false;
+
+                } else {
+                    throw new Error(`业务错误: ${result.code}`);
+                    addChatMessage(result.data, 'user')
+                }
+            }).catch(error => {
+                console.error('请求失败:', error.message);
+                // 显示错误消息给用户
+                alert(`操作失败: ${error.message}`);
+            });
+        }
+
+
+    });
+</script>
+</body>
+
+</html>

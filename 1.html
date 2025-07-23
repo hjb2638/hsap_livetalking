@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebRTC WHEP Player</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .player-container {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    #videoElement {
+      width: 100%;
+      background-color: #000;
+    }
+    .status-indicator {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .connecting { background-color: #ffc107; }
+    .playing { background-color: #4caf50; color: white; }
+    .error { background-color: #f44336; color: white; }
+    button { padding: 10px 15px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="player-container">
+      <div class="status-indicator" :class="statusClass">{{ statusMessage }}</div>
+      
+      <video id="videoElement" playsinline autoplay muted></video>
+      
+      <div class="controls">
+        <button @click="connect" :disabled="isConnecting || isConnected">连接播放</button>
+        <button @click="disconnect" :disabled="!isConnected">断开连接</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+    
+    createApp({
+      setup() {
+        const host = "your-server-host"; // 更改为你的服务器主机名或IP
+        const streamUrl = `http://222.30.145.22:8080/live/livestream.flv`;
+        
+        const peerConnection = ref(null);
+        const streamStatus = ref('disconnected'); // disconnected, connecting, playing, error
+        const errorMessage = ref('');
+        const videoElement = ref(null);
+        
+        const statusMessages = {
+          disconnected: { text: "未连接", class: "disconnected" },
+          connecting: { text: "连接中...", class: "connecting" },
+          playing: { text: "正在播放", class: "playing" },
+          error: { text: "错误: ${error}", class: "error" }
+        };
+        
+        const statusMessage = computed(() => {
+          return statusMessages[streamStatus.value].text.replace('${error}', errorMessage.value);
+        });
+        
+        const statusClass = computed(() => {
+          return statusMessages[streamStatus.value].class;
+        });
+        
+        const isConnecting = computed(() => streamStatus.value === 'connecting');
+        const isConnected = computed(() => streamStatus.value === 'playing');
+        
+        const connect = async () => {
+          try {
+            streamStatus.value = 'connecting';
+            videoElement.value = document.getElementById('videoElement');
+            
+            // 创建RTCPeerConnection
+            const config = {
+              sdpSemantics: 'unified-plan',
+              iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            };
+            peerConnection.value = new RTCPeerConnection(config);
+            
+            // 添加事件监听器
+            peerConnection.value.addEventListener('track', handleTrack);
+            peerConnection.value.addEventListener('icecandidate', handleICECandidate);
+            peerConnection.value.addEventListener('connectionstatechange', handleConnectionChange);
+            peerConnection.value.addEventListener('iceconnectionstatechange', handleICEConnectionChange);
+            
+            // 创建接收器
+            peerConnection.value.addTransceiver('video', { direction: 'recvonly' });
+            peerConnection.value.addTransceiver('audio', { direction: 'recvonly' });
+            
+            // 创建Offer并设置本地描述
+            const offer = await peerConnection.value.createOffer();
+            await peerConnection.value.setLocalDescription(offer);
+            
+            // 发送Offer到WHEP服务器
+            const response = await fetch(streamUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/sdp' },
+              body: offer.sdp
+            });
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+            
+            // 处理服务器返回的Answer
+            const answer = await response.text();
+            await peerConnection.value.setRemoteDescription({
+              type: 'answer',
+              sdp: answer
+            });
+            
+          } catch (error) {
+            handleError(error);
+          }
+        };
+        
+        const disconnect = () => {
+          if (peerConnection.value) {
+            peerConnection.value.close();
+            peerConnection.value = null;
+          }
+          videoElement.value.srcObject = null;
+          streamStatus.value = 'disconnected';
+        };
+        
+        const handleTrack = (event) => {
+          if (event.track.kind === 'video') {
+            videoElement.value.srcObject = event.streams[0];
+            streamStatus.value = 'playing';
+          }
+        };
+        
+        const handleICECandidate = (event) => {
+          if (event.candidate) {
+            // 在此发送ICE candidate到服务器
+          }
+        };
+        
+        const handleConnectionChange = () => {
+          if (peerConnection.value?.connectionState === 'disconnected') {
+            disconnect();
+          }
+        };
+        
+        const handleICEConnectionChange = () => {
+          if (peerConnection.value?.iceConnectionState === 'failed') {
+            handleError('ICE连接失败');
+          }
+        };
+        
+        const handleError = (error) => {
+          console.error('Error:', error);
+          errorMessage.value = error.message || error;
+          streamStatus.value = 'error';
+          
+          // 3秒后重置状态
+          setTimeout(() => {
+            if (streamStatus.value === 'error') {
+              streamStatus.value = 'disconnected';
+            }
+          }, 3000);
+        };
+        
+        onMounted(() => {
+          // 自动连接（可选）
+          // connect();
+        });
+        
+        return {
+          connect,
+          disconnect,
+          statusMessage,
+          statusClass,
+          isConnecting,
+          isConnected
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
