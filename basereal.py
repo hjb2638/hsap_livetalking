@@ -73,7 +73,7 @@ class BaseReal:
         self.sample_rate = 16000
         self.chunk = self.sample_rate // opt.fps # 320 samples per chunk (20ms * 16000 / 1000)
         self.sessionid = self.opt.sessionid
-
+        self.interrupt_text=""
         if opt.tts == "edgetts":
             self.tts = EdgeTTS(opt,self)
         elif opt.tts == "gpt-sovits":
@@ -161,6 +161,8 @@ class BaseReal:
 
     def notify(self,eventpoint):
         logger.info("notify:%s",eventpoint)
+        if eventpoint.get('status')=='end':
+            self.interrupt_text=eventpoint.get('text')
 
     def start_recording(self):
         """开始录制视频"""

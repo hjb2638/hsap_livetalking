@@ -1251,7 +1251,7 @@
                     await np_read("好的已收到您的消息，请稍等","system")
                 },500)
 
-                // 日常问答
+                // 日常问答 todo:此处调用大模型，让大模型
                 await  commonSend(text)
             }
 
@@ -1462,7 +1462,7 @@
                     user_content: prompt
                 }).toString();
 
-                const response = await fetch(`http://222.30.145.22:8100/normal_model/?${queryParams}`, {
+                const response = await fetch(`http://ai.hsap.com.cn:8100/normal_model/?${queryParams}`, {
                     method: 'POST',
                     headers: {
                     },

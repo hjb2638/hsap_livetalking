@@ -703,14 +703,17 @@
         $('#start').click(function () {
             updateConnectionStatus('connecting');
             start();
+
             $(this).hide();
             $('#stop').show();
 
             // 添加定时器检查视频流是否已加载
             let connectionCheckTimer = setInterval(function () {
                 const video = document.getElementById('video');
+
                 // 检查视频是否有数据
                 if (video.readyState >= 3 && video.videoWidth > 0) {
+
                     updateConnectionStatus('connected');
                     clearInterval(connectionCheckTimer);
                 }

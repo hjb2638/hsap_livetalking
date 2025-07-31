@@ -16,7 +16,7 @@ import asyncio  # 新增：用于异步操作
 
 def postRequests(str1):
     try:
-        url = 'http://222.30.145.22:8100/conversations/api/np_get_res'
+        url = 'http://ai.hsap.com.cn:8100/conversations/api/np_get_res'
         data = {"message": str1}
         response = requests.post(url, data=json.dumps(data))
         return response.json()
@@ -26,10 +26,10 @@ def postRequests(str1):
 
 async def getQuestionsHRA(user_id):
     try:
-        url = 'http://222.30.145.22:8100/v1/knowledge_base_chat_with_hra/'
+        url = 'http://ai.hsap.com.cn:8100/v1/knowledge_base_chat_with_hra/'
         data = {
             "user_id": user_id,
-            "kb_id": "2",
+            "kb_id": "1",
             "report_interpret": True
         }
         # print(f"hra接口:{url}")
@@ -107,7 +107,7 @@ async def getQuestionsHRA(user_id):
         #
         #
         # }
-
+        logger.info("get_HRA_data:",response.json())
         return response.json()  #.json()
     except Exception as e:
         print("交互异常:", str(e))
@@ -115,7 +115,7 @@ async def getQuestionsHRA(user_id):
 
 def postRadar(user_id, datas):
     try:
-        url = "http://222.30.145.22:8100/processRadarData"
+        url = "http://ai.hsap.com.cn:8100/processRadarData"
         data = {
             "user_id": user_id,
             "data": datas
@@ -128,7 +128,7 @@ def postRadar(user_id, datas):
 
 def postNormal(user_id: int, total_interpret: bool, query: str, qa_data: list[str]):
     try:
-        url = "http://222.30.145.22:8100/normal_model_qa/"
+        url = "http://ai.hsap.com.cn:8100/normal_model_qa/"
         data = {
             "user_id": user_id,
             "total_interpret": total_interpret,

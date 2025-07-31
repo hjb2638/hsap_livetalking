@@ -89,56 +89,126 @@ def build_nerfreal(sessionid:int)->BaseReal:
 
 #@app.route('/offer', methods=['POST'])
 async def offer(request):
-    params = await request.json()
-    offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
+    logger.info("===== 开始处理新的offer请求 =====")
 
+    # 解析请求参数
+    try:
+        params = await request.json()
+        logger.info("成功解析请求JSON参数")
+    except Exception as e:
+        logger.error(f"解析请求JSON失败: {str(e)}", exc_info=True)
+        return web.Response(status=400)
+
+    # 创建SDP offer对象
+    try:
+        offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
+        logger.info(f"创建SDP offer对象，类型: {params['type']}")
+    except KeyError as e:
+        logger.error(f"SDP参数缺失: {str(e)}", exc_info=True)
+        return web.Response(status=400)
+
+    # 检查会话数限制
     if len(nerfreals) >= opt.max_session:
-        logger.info('reach max session')
-        return -1
-    sessionid = randN(6) #len(nerfreals)
-    logger.info('sessionid=%d',sessionid)
+        logger.warning(f"达到最大会话数限制: {opt.max_session}，拒绝新连接")
+        return web.Response(status=503)
+
+    # 生成会话ID
+    sessionid = randN(6)
+    logger.info(f"生成新会话ID: {sessionid}，当前会话数: {len(nerfreals) + 1}")
     nerfreals[sessionid] = None
-    nerfreal = await asyncio.get_event_loop().run_in_executor(None, build_nerfreal,sessionid)
-    nerfreals[sessionid] = nerfreal
 
-    #ice_server = RTCIceServer(urls='stun:stun.l.google.com:19302')
-    ice_server = RTCIceServer(urls='stun:stun.miwifi.com:3478')
-    pc = RTCPeerConnection(configuration=RTCConfiguration(iceServers=[ice_server]))
-    pcs.add(pc)
+    # 构建数字人实例
+    try:
+        logger.info(f"开始为会话 {sessionid} 构建数字人实例")
+        nerfreal = await asyncio.get_event_loop().run_in_executor(None, build_nerfreal, sessionid)
+        nerfreals[sessionid] = nerfreal
+        logger.info(f"会话 {sessionid} 数字人实例构建完成")
+    except Exception as e:
+        logger.error(f"会话 {sessionid} 数字人构建失败: {str(e)}", exc_info=True)
+        del nerfreals[sessionid]
+        return web.Response(status=500)
 
+    # 初始化WebRTC连接
+    try:
+        ice_server = RTCIceServer(urls='stun:stun.miwifi.com:3478')
+        pc = RTCPeerConnection(configuration=RTCConfiguration(iceServers=[ice_server]))
+        logger.info(f"会话 {sessionid} 创建RTCPeerConnection实例: {id(pc)}")
+        pcs.add(pc)
+    except Exception as e:
+        logger.error(f"会话 {sessionid} 创建WebRTC连接失败: {str(e)}", exc_info=True)
+        del nerfreals[sessionid]
+        return web.Response(status=500)
+
+    # 连接状态变化处理
     @pc.on("connectionstatechange")
     async def on_connectionstatechange():
-        logger.info("Connection state is %s" % pc.connectionState)
-        if pc.connectionState == "failed":
+        current_state = pc.connectionState
+        logger.info(f"会话 {sessionid} 连接状态变更为: {current_state}")
+
+        if current_state == "failed":
+            logger.warning(f"会话 {sessionid} 连接失败，正在关闭连接")
             await pc.close()
             pcs.discard(pc)
             del nerfreals[sessionid]
-        if pc.connectionState == "closed":
+            logger.info(f"会话 {sessionid} 资源已清理")
+
+        if current_state == "closed":
+            logger.info(f"会话 {sessionid} 连接已关闭")
             pcs.discard(pc)
             del nerfreals[sessionid]
+            logger.info(f"会话 {sessionid} 资源已清理")
 
-    player = HumanPlayer(nerfreals[sessionid])
-    audio_sender = pc.addTrack(player.audio)
-    video_sender = pc.addTrack(player.video)
-    capabilities = RTCRtpSender.getCapabilities("video")
-    preferences = list(filter(lambda x: x.name == "H264", capabilities.codecs))
-    preferences += list(filter(lambda x: x.name == "VP8", capabilities.codecs))
-    preferences += list(filter(lambda x: x.name == "rtx", capabilities.codecs))
-    transceiver = pc.getTransceivers()[1]
-    transceiver.setCodecPreferences(preferences)
+    # 添加媒体轨道
+    try:
+        player = HumanPlayer(nerfreals[sessionid])
+        audio_sender = pc.addTrack(player.audio)
+        video_sender = pc.addTrack(player.video)
+        logger.info(f"会话 {sessionid} 已添加音视频轨道，音频轨道: {id(audio_sender)}, 视频轨道: {id(video_sender)}")
+    except Exception as e:
+        logger.error(f"会话 {sessionid} 添加媒体轨道失败: {str(e)}", exc_info=True)
+        return web.Response(status=500)
 
-    await pc.setRemoteDescription(offer)
+    # 配置编解码器偏好
+    try:
+        capabilities = RTCRtpSender.getCapabilities("video")
+        h264_codecs = list(filter(lambda x: x.name == "H264", capabilities.codecs))
+        vp8_codecs = list(filter(lambda x: x.name == "VP8", capabilities.codecs))
+        rtx_codecs = list(filter(lambda x: x.name == "rtx", capabilities.codecs))
+        preferences = h264_codecs + vp8_codecs + rtx_codecs
 
-    answer = await pc.createAnswer()
-    await pc.setLocalDescription(answer)
+        logger.info(
+            f"会话 {sessionid} 编解码器偏好: H264({len(h264_codecs)}) > VP8({len(vp8_codecs)}) > RTX({len(rtx_codecs)})")
 
-    #return jsonify({"sdp": pc.localDescription.sdp, "type": pc.localDescription.type})
+        transceiver = pc.getTransceivers()[1]
+        transceiver.setCodecPreferences(preferences)
+        logger.info(f"会话 {sessionid} 已设置编解码器偏好")
+    except Exception as e:
+        logger.error(f"会话 {sessionid} 配置编解码器失败: {str(e)}", exc_info=True)
+        return web.Response(status=500)
+
+    # 处理SDP交换
+    try:
+        await pc.setRemoteDescription(offer)
+        logger.info(f"会话 {sessionid} 已设置远程SDP描述")
+
+        answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+        logger.info(f"会话 {sessionid} 已生成并设置本地SDP answer")
+    except Exception as e:
+        logger.error(f"会话 {sessionid} SDP交换失败: {str(e)}", exc_info=True)
+        return web.Response(status=500)
+
+    # 返回响应
+    response_data = {
+        "sdp": pc.localDescription.sdp,
+        "type": pc.localDescription.type,
+        "sessionid": sessionid
+    }
+    logger.info(f"会话 {sessionid} offer处理完成，返回响应数据")
 
     return web.Response(
         content_type="application/json",
-        text=json.dumps(
-            {"sdp": pc.localDescription.sdp, "type": pc.localDescription.type, "sessionid":sessionid}
-        ),
+        text=json.dumps(response_data)
     )
 async def hra_t(request):
     params = await request.json()
@@ -184,8 +254,10 @@ async def hraHuman(request):
     str = params["type"]
     sessionid = params.get('sessionid', 0)
     if params.get('interrupt'):
+
         nerfreals[sessionid].flush_talk()
     if params['type'] == 'interrupt':
+        print(nerfreals[sessionid].interrupt_text)
         return web.Response(
             content_type="application/json",
             text=json.dumps(
@@ -770,7 +842,7 @@ if __name__ == '__main__':
     elif opt.transport=='rtcpush':
         pagename='rtcpushapi.html'
     logger.info('start http server; http://<serverip>:'+str(opt.listenport)+'/'+pagename)
-    logger.info('如果使用webrtc，推荐访问webrtc集成前端: http://222.30.145.22:'+str(opt.listenport)+'/dashboard.html')
+    logger.info('如果使用webrtc，推荐访问webrtc集成前端: http://ai.hsap.com.cn:'+str(opt.listenport)+'/dashboard.html')
     def run_server(runner):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)

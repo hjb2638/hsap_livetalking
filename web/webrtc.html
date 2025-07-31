@@ -29,7 +29,7 @@
     <label for="use-stun">Use STUN server</label>
 </div>
 <button id="start" onclick="start()">Start</button>
-<button id="stop" style="di splay: none" onclick="stop()">Stop</button>
+<button id="stop" style="display: none" onclick="stop()">Stop</button>
 <form class="form-inline" id="echo-form">
     <div class="form-group">
       <p>input text</p>
@@ -53,6 +53,7 @@
 <script type="text/javascript" charset="utf-8">
 
 	$(document).ready(function() {
+
 	  var host = window.location.hostname
 	  var ws = new WebSocket("ws://"+host+":8000/humanecho");
 	  //document.getElementsByTagName("video")[0].setAttribute("src", aa["video"]);
